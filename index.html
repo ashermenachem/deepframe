@@ -1,1 +1,213 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Asher Menachem"><meta name="theme-color" content="#101111"><meta name="description" content="Every photograph has a deeper story. Discover your photo’s location, camera, settings, and embedded metadata. Privately, in your browser."><meta property="og:title" content="Deepframe — Beyond the image"><meta property="og:description" content="A cinematic, private photo metadata explorer. Made by Asher Menachem."><title>Deepframe — Beyond the image</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="stylesheet" href="/src/style.css"></head><body><div class="ambient"></div><div class="grain"></div><nav><a class="brand" href="#" aria-label="Deepframe home"><span class="brand-icon"><i></i></span>deepframe<span class="brand-dot">®</span></a><div class="nav-links"><a href="#how">The experience</a><a href="https://github.com/ashermenachem/deepframe" target="_blank" rel="noopener">Open source <span>↗</span></a></div><button class="nav-upload" data-upload>Explore a photo <span>↗</span></button></nav><input type="file" id="file" accept="image/*,.heic,.heif,.tif,.tiff,.avif" hidden><main><section class="hero" id="hero"><div class="eyebrow reveal"><span class="live-dot"></span> BEYOND THE IMAGE <span class="edition">A NEW WAY TO LOOK.</span></div><div class="hero-heading"><h1 class="reveal">There’s more<br>to the <em>picture.</em></h1><div class="hero-intro reveal"><p>A place. A moment. A thousand hidden details.<br>Uncover the story your photo already holds.</p><button class="primary" data-upload><i data-lucide="plus"></i> Explore your photo <span>↗</span></button><div class="privacy"><i data-lucide="lock-keyhole"></i> On your device. For your eyes only.</div></div></div><div class="photo-stage reveal" id="dropzone"><img id="hero-image" src="/assets/mountain.jpg" alt="Dramatic sunlit mountain peak rising through the clouds"><div class="photo-shade"></div><div class="stage-top"><span><span class="live-dot"></span> THE DEEPER LOOK</span><span>DEMO FRAME / 001</span></div><div class="crosshair cross-a"></div><div class="crosshair cross-b"></div><div class="annotation annotation-camera"><span class="annotation-icon"><i data-lucide="camera"></i></span><div><small>THE PERSPECTIVE</small><strong>Sony α7R IV</strong><span>35 mm · ƒ/8 · ISO 100</span></div></div><div class="annotation annotation-location"><i data-lucide="map-pin"></i><div><small>THE PLACE</small><strong>46.5775° N, 8.0052° E</strong><span>Illustrative metadata</span></div></div><div class="stage-bottom"><div><small>EVERY FRAME HAS A STORY.</small><p>Find yours.</p></div><button id="demo" class="glass-button">Explore the demo <i data-lucide="arrow-up-right"></i></button></div><div class="scan-line"></div><div class="drop-overlay"><i data-lucide="scan-line"></i><h2>Let the picture speak.</h2><p>Drop your photo to begin</p></div></div><div class="stage-caption"><span>01 — LOOK CLOSER</span><span>JPEG · HEIC · TIFF · PNG · AVIF <span class="muted">+ MORE</span></span><span class="scroll-hint">SCROLL TO DISCOVER ↓</span></div></section><section id="results" hidden aria-live="polite"></section><section class="how" id="how"><div class="section-head"><div><span class="eyebrow">THE DETAILS MAKE THE DIFFERENCE</span><h2>A whole story.<br>Hiding in plain sight.</h2></div><p>No technical knowledge needed.<br>Just a little curiosity.</p></div><div class="features"><article><span class="feature-num">01 /</span><i data-lucide="map-pin"></i><h3>The place.</h3><p>Coordinates and altitude, when your camera saved them. A memory with a sense of place.</p></article><article><span class="feature-num">02 /</span><i data-lucide="clock-3"></i><h3>The moment.</h3><p>The original capture time, down to the second. With time zone information when available.</p></article><article><span class="feature-num">03 /</span><i data-lucide="aperture"></i><h3>The craft.</h3><p>The phone or camera. The lens, light, and settings. Discover how the image came to life.</p></article><article><span class="feature-num">04 /</span><i data-lucide="layers-2"></i><h3>Everything else.</h3><p>Color profiles, editing software, copyright, and every readable embedded field. All in one place.</p></article></div><div class="privacy-note"><i data-lucide="shield-check"></i><div><h3>Your memories stay yours.</h3><p>Your photo never leaves this browser. No accounts. No photo uploads. No tracking.</p></div><span>PRIVATE BY DESIGN ↗</span></div></section><section class="closing"><span class="eyebrow">A DIFFERENT PERSPECTIVE</span><h2>See beyond<br>the <em>surface.</em></h2><button class="primary" data-upload>Discover your photo <i data-lucide="arrow-up-right"></i></button><p>Free to explore. Open by nature.</p></section></main><footer><div class="footer-top"><a class="brand" href="#"><span class="brand-icon"><i></i></span>deepframe</a><p>Made with intention.<br>By <a href="https://github.com/ashermenachem">Asher Menachem ↗</a></p><div class="socials"><a href="https://github.com/ashermenachem">GitHub ↗</a><a href="https://www.instagram.com/ashermenachem/?hl=en">Instagram ↗</a><a href="https://x.com/ashermenachem">X ↗</a><a href="https://www.tiktok.com/@ashermenachem">TikTok ↗</a><a href="https://www.snapchat.com/@asher.menachem">Snapchat ↗</a></div></div><div class="footer-bottom"><span>© 2026 DEEPFRAME</span><span>A LITTLE CURIOSITY CHANGES EVERYTHING.</span><a href="https://unsplash.com">Demo image: Unsplash ↗</a></div></footer><div id="toast" role="status"></div><script type="module" src="/src/main.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="author" content="Asher Menachem" />
+    <meta name="theme-color" content="#101111" />
+    <meta
+      name="description"
+      content="Every photograph has a deeper story. Discover your photo’s location, camera, settings, and embedded metadata. Privately, in your browser."
+    />
+    <meta property="og:title" content="Deepframe — Beyond the image" />
+    <meta
+      property="og:description"
+      content="A cinematic, private photo metadata explorer. Made by Asher Menachem."
+    />
+    <title>Deepframe — Beyond the image</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="ambient"></div>
+    <div class="grain"></div>
+    <nav>
+      <a class="brand" href="#" aria-label="Deepframe home"
+        ><span class="brand-icon"><i></i></span>deepframe<span class="brand-dot"
+          >®</span
+        ></a
+      >
+      <div class="nav-links">
+        <a href="#how">The experience</a
+        ><a
+          href="https://github.com/ashermenachem/deepframe"
+          target="_blank"
+          rel="noopener"
+          >Open source <span>↗</span></a
+        >
+      </div>
+      <button class="nav-upload" data-upload>
+        Explore a photo <span>↗</span>
+      </button>
+    </nav>
+    <input
+      type="file"
+      id="file"
+      accept="image/*,.heic,.heif,.tif,.tiff,.avif"
+      hidden
+    />
+    <main>
+      <section class="hero" id="hero">
+        <div class="eyebrow reveal">
+          <span class="live-dot"></span> BEYOND THE IMAGE
+          <span class="edition">A NEW WAY TO LOOK.</span>
+        </div>
+        <div class="hero-heading">
+          <h1 class="reveal">There’s more<br />to the <em>picture.</em></h1>
+          <div class="hero-intro reveal">
+            <p>
+              A place. A moment. A thousand hidden details.<br />Uncover the
+              story your photo already holds.
+            </p>
+            <button class="primary" data-upload>
+              <i data-lucide="plus"></i> Explore your photo <span>↗</span>
+            </button>
+            <div class="privacy">
+              <i data-lucide="lock-keyhole"></i> On your device. For your eyes
+              only.
+            </div>
+          </div>
+        </div>
+        <div class="photo-stage reveal" id="dropzone">
+          <img
+            id="hero-image"
+            src="/assets/mountain.jpg"
+            alt="Dramatic sunlit mountain peak rising through the clouds"
+          />
+          <div class="photo-shade"></div>
+          <div class="stage-top">
+            <span><span class="live-dot"></span> THE DEEPER LOOK</span
+            ><span>DEMO FRAME / 001</span>
+          </div>
+          <div class="crosshair cross-a"></div>
+          <div class="crosshair cross-b"></div>
+          <div class="annotation annotation-camera">
+            <span class="annotation-icon"><i data-lucide="camera"></i></span>
+            <div>
+              <small>THE PERSPECTIVE</small><strong>Sony α7R IV</strong
+              ><span>35 mm · ƒ/8 · ISO 100</span>
+            </div>
+          </div>
+          <div class="annotation annotation-location">
+            <i data-lucide="map-pin"></i>
+            <div>
+              <small>THE PLACE</small><strong>46.5775° N, 8.0052° E</strong
+              ><span>Illustrative metadata</span>
+            </div>
+          </div>
+          <div class="stage-bottom">
+            <div>
+              <small>EVERY FRAME HAS A STORY.</small>
+              <p>Find yours.</p>
+            </div>
+            <button id="demo" class="glass-button">
+              Explore the demo <i data-lucide="arrow-up-right"></i>
+            </button>
+          </div>
+          <div class="scan-line"></div>
+          <div class="drop-overlay" aria-hidden="true">
+            <i data-lucide="scan-line"></i>
+            <h2>Let the picture speak.</h2>
+            <p>Drop your photo to begin</p>
+          </div>
+        </div>
+        <div class="stage-caption">
+          <span>01 — LOOK CLOSER</span
+          ><span
+            >JPEG · HEIC · TIFF · PNG · AVIF
+            <span class="muted">+ MORE</span></span
+          ><span class="scroll-hint">SCROLL TO DISCOVER ↓</span>
+        </div>
+      </section>
+      <section id="results" hidden aria-live="polite"></section>
+      <section class="how" id="how">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">THE DETAILS MAKE THE DIFFERENCE</span>
+            <h2>A whole story.<br />Hiding in plain sight.</h2>
+          </div>
+          <p>No technical knowledge needed.<br />Just a little curiosity.</p>
+        </div>
+        <div class="features">
+          <article>
+            <span class="feature-num">01 /</span><i data-lucide="map-pin"></i>
+            <h3>The place.</h3>
+            <p>
+              Coordinates and altitude, when your camera saved them. A memory
+              with a sense of place.
+            </p>
+          </article>
+          <article>
+            <span class="feature-num">02 /</span><i data-lucide="clock-3"></i>
+            <h3>The moment.</h3>
+            <p>
+              The original capture time, down to the second. With time zone
+              information when available.
+            </p>
+          </article>
+          <article>
+            <span class="feature-num">03 /</span><i data-lucide="aperture"></i>
+            <h3>The craft.</h3>
+            <p>
+              The phone or camera. The lens, light, and settings. Discover how
+              the image came to life.
+            </p>
+          </article>
+          <article>
+            <span class="feature-num">04 /</span><i data-lucide="layers-2"></i>
+            <h3>Everything else.</h3>
+            <p>
+              Color profiles, editing software, copyright, and every readable
+              embedded field. All in one place.
+            </p>
+          </article>
+        </div>
+        <div class="privacy-note">
+          <i data-lucide="shield-check"></i>
+          <div>
+            <h3>Your memories stay yours.</h3>
+            <p>
+              Your photo never leaves this browser. No accounts. No photo
+              uploads. No tracking.
+            </p>
+          </div>
+          <span>PRIVATE BY DESIGN ↗</span>
+        </div>
+      </section>
+      <section class="closing">
+        <span class="eyebrow">A DIFFERENT PERSPECTIVE</span>
+        <h2>See beyond<br />the <em>surface.</em></h2>
+        <button class="primary" data-upload>
+          Discover your photo <i data-lucide="arrow-up-right"></i>
+        </button>
+        <p>Free to explore. Open by nature.</p>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-top">
+        <a class="brand" href="#"
+          ><span class="brand-icon"><i></i></span>deepframe</a
+        >
+        <p>
+          Made with intention.<br />By
+          <a href="https://github.com/ashermenachem">Asher Menachem ↗</a>
+        </p>
+        <div class="socials">
+          <a href="https://github.com/ashermenachem">GitHub ↗</a
+          ><a href="https://www.instagram.com/ashermenachem/?hl=en"
+            >Instagram ↗</a
+          ><a href="https://x.com/ashermenachem">X ↗</a
+          ><a href="https://www.tiktok.com/@ashermenachem">TikTok ↗</a
+          ><a href="https://www.snapchat.com/@asher.menachem">Snapchat ↗</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 DEEPFRAME</span
+        ><span>A LITTLE CURIOSITY CHANGES EVERYTHING.</span
+        ><a href="https://unsplash.com">Demo image: Unsplash ↗</a>
+      </div>
+    </footer>
+    <div id="toast" role="status"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

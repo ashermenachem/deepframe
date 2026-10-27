@@ -19,18 +19,18 @@ Warm light. Quiet typography. Slow camera movement. Floating annotations. An int
 
 ## The story, beautifully organized
 
-| First things first | What you can discover |
-| :--- | :--- |
-| **Coordinates** | Latitude, longitude, altitude, and an optional Maps link |
-| **Date and time** | Original camera time and a recorded UTC offset, when available |
-| **Phone / camera** | Manufacturer, model, and lens |
-| **Settings** | Aperture, shutter speed, ISO, and focal length |
-| **Every readable detail** | EXIF, GPS, XMP, IPTC, ICC color profiles, and image structure |
-| **The file itself** | Name, dimensions, resolution, size, modification time, and SHA-256 |
+| First things first        | What you can discover                                              |
+| :------------------------ | :----------------------------------------------------------------- |
+| **Coordinates**           | Latitude, longitude, altitude, and an optional Maps link           |
+| **Date and time**         | Original camera time and a recorded UTC offset, when available     |
+| **Phone / camera**        | Manufacturer, model, and lens                                      |
+| **Settings**              | Aperture, shutter speed, ISO, and focal length                     |
+| **Every readable detail** | EXIF, GPS, XMP, IPTC, ICC color profiles, and image structure      |
+| **The file itself**       | Name, dimensions, resolution, size, modification time, and SHA-256 |
 
 - Choose an image or drag it into the browser.
 - Read the key facts first, then explore collapsible metadata sections.
-- Search every field and export a structured JSON report, including raw binary metadata arrays.
+- Search every field and export a structured JSON report, including raw binary metadata arrays. Binary fields can also be expanded in the report.
 - Try the clearly labeled illustrative demo before choosing a photo.
 - Enjoy responsive layouts, keyboard support, and reduced-motion preferences.
 
@@ -50,24 +50,29 @@ Open the **Local** address printed in the terminal, usually **http://localhost:5
 ```sh
 git clone https://github.com/ashermenachem/deepframe.git
 ```
+
 Downloads Deepframe into a new folder.
 
 ```sh
 cd deepframe
 ```
+
 Moves your terminal into that folder.
 
 ```sh
 npm ci
 ```
+
 Installs the exact dependencies used by the project.
 
 ```sh
 npm run dev
 ```
+
 Starts the local website. Next time, you only need `cd deepframe` and `npm run dev`.
 
 If the folder already exists, use a different folder name or open your existing copy. If the port is busy, Vite prints another available Local address.
+
 </details>
 
 ## Private by design
@@ -97,7 +102,7 @@ src/main.js       Photo flow, rendering, export, animation
 src/metadata.js   Metadata formatting and coordinate normalization
 src/style.css    Responsive visual system and motion
 public/assets/   Local landscape image
- test/           Metadata regression tests
+test/           Metadata regression tests
 ```
 
 GitHub Actions checks the project and publishes the production build to GitHub Pages. The `.openai/hosting.json` file configures the separate private Sites deployment. Forks can remove that file and deploy `dist/` to any static host. To use GitHub Pages on a fork, choose **GitHub Actions** under **Settings → Pages**, then run the included workflow.

@@ -1,51 +1,356 @@
-import exifr from 'exifr';
-import {createIcons, Plus,LockKeyhole, Camera,MapPin,ArrowUpRight,ScanLine,Clock3,Aperture,Layers2,ShieldCheck, Download, Search, Image, LoaderCircle, RotateCcw} from 'lucide';
-import {escapeHTML as esc,formatValue,flattenGroups,coordinates,formatBytes,cameraSettings,tidyNumber,captureLabel} from './metadata.js';
-const icons = ()=>createIcons({icons:{Plus,LockKeyhole,Camera,MapPin,ArrowUpRight,ScanLine,Clock3,Aperture,Layers2,ShieldCheck,Download,Search,Image,LoaderCircle,RotateCcw}});
+import exifr from "exifr";
+import {
+  createIcons,
+  Plus,
+  LockKeyhole,
+  Camera,
+  MapPin,
+  ArrowUpRight,
+  ScanLine,
+  Clock3,
+  Aperture,
+  Layers2,
+  ShieldCheck,
+  Download,
+  Search,
+  Image,
+  LoaderCircle,
+  RotateCcw,
+} from "lucide";
+import {
+  escapeHTML as esc,
+  formatValue,
+  flattenGroups,
+  coordinates,
+  formatBytes,
+  cameraSettings,
+  tidyNumber,
+  captureLabel,
+} from "./metadata.js";
+const icons = () =>
+  createIcons({
+    icons: {
+      Plus,
+      LockKeyhole,
+      Camera,
+      MapPin,
+      ArrowUpRight,
+      ScanLine,
+      Clock3,
+      Aperture,
+      Layers2,
+      ShieldCheck,
+      Download,
+      Search,
+      Image,
+      LoaderCircle,
+      RotateCcw,
+    },
+  });
 icons();
-const demoURL=new URL('assets/mountain.jpg',document.baseURI).href;
-const fileInput=document.querySelector('#file'), result=document.querySelector('#results'),hero=document.querySelector('#hero');
-let previewURL=null, currentReport=null, busy=false;
-const toast=message=>{const el=document.querySelector('#toast');el.textContent=message;el.classList.add('visible');setTimeout(()=>el.classList.remove('visible'),4500)};
-document.querySelectorAll('[data-upload]').forEach(b=>b.addEventListener('click',()=>{if(!busy)fileInput.click()}));
-fileInput.addEventListener('change',()=>{if(fileInput.files[0])analyze(fileInput.files[0]);fileInput.value=''});
-const drop=document.querySelector('#dropzone');
-let dragDepth=0;
-window.addEventListener('dragenter',e=>{if(e.dataTransfer?.types.includes('Files')){e.preventDefault();dragDepth++;drop.classList.add('dragging')}});
-window.addEventListener('dragover',e=>{if(e.dataTransfer?.types.includes('Files'))e.preventDefault()});
-window.addEventListener('dragleave',()=>{if(--dragDepth<=0){dragDepth=0;drop.classList.remove('dragging')}});
-window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;drop.classList.remove('dragging');if(e.dataTransfer.files[0])analyze(e.dataTransfer.files[0])});
-function reset(){if(busy)return;result.hidden=true;hero.hidden=false;if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null}currentReport=null;window.scrollTo({top:0,behavior:'smooth'})}
-document.querySelector('.brand').addEventListener('click',reset);
-async function dimensions(url){return new Promise(resolve=>{const i=new window.Image();i.onload=()=>resolve({width:i.naturalWidth,height:i.naturalHeight,preview:true});i.onerror=()=>resolve({preview:false});i.src=url})}
-async function analyze(file){
- if(busy)return;
- if(file.size>60*1024*1024){toast('Choose a photo under 60 MB so your browser stays responsive.');return}
- if(!file.type.startsWith('image/')&&!/\.(jpe?g|png|heic|heif|tiff?|avif|webp|gif|bmp|svg)$/i.test(file.name)){toast('Please choose an image file.');return}
- busy=true;hero.hidden=true;result.hidden=false;result.innerHTML='<div class="loading"><i data-lucide="aperture"></i><h2>Reading between the pixels.</h2><p>Exploring your photo, right here on your device.</p></div>';icons();result.scrollIntoView({behavior:'smooth',block:'start'});
- if(previewURL)URL.revokeObjectURL(previewURL);previewURL=URL.createObjectURL(file);
- try{
- const image=await dimensions(previewURL);
- let groups={}, warning='';
- try {groups=await exifr.parse(file,{tiff:true,makerNote:true,userComment:true,multiSegment:true,xmp:true,icc:true,iptc:true,jfif:true,ihdr:true,mergeOutput:false,reviveValues:false,translateKeys:true,translateValues:true})||{}}catch(error){warning='Some embedded metadata could not be read. File details are still available.'; console.warn('Metadata parser:',error.message)}
- const bytes=await file.arrayBuffer();
- const sha=globalThis.crypto?.subtle?Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join(''):'Unavailable in this browser context';
- const fileInfo={'File name':file.name,'File size':`${formatBytes(file.size)} (${file.size.toLocaleString()} bytes)`,'File type':file.type||'Not provided by browser',...(image.width?{'Image width':`${image.width} px`,'Image height':`${image.height} px`,'Resolution':`${(image.width*image.height/1e6).toFixed(2)} megapixels`}:{}),'File last modified':new Date(file.lastModified).toISOString(),'SHA-256':sha};
- currentReport={file:fileInfo,embedded:groups};render({groups,fileInfo,image,url:previewURL,warning,demo:false});
- }catch(error){result.innerHTML='<div class="loading"><h2>This frame couldn’t be opened.</h2><p>Try another image or a smaller file.</p><button class="text-button" id="retry">Back to the experience</button></div>';document.querySelector('#retry').onclick=reset;console.warn(error)}finally{busy=false}
+const demoURL = new URL("assets/mountain.jpg", document.baseURI).href;
+const fileInput = document.querySelector("#file"),
+  result = document.querySelector("#results"),
+  hero = document.querySelector("#hero");
+let previewURL = null,
+  currentReport = null,
+  busy = false;
+const toast = (message) => {
+  const el = document.querySelector("#toast");
+  el.textContent = message;
+  el.classList.add("visible");
+  setTimeout(() => el.classList.remove("visible"), 4500);
+};
+document.querySelectorAll("[data-upload]").forEach((b) =>
+  b.addEventListener("click", () => {
+    if (!busy) fileInput.click();
+  }),
+);
+fileInput.addEventListener("change", () => {
+  if (fileInput.files[0]) analyze(fileInput.files[0]);
+  fileInput.value = "";
+});
+const drop = document.querySelector("#dropzone");
+let dragDepth = 0;
+window.addEventListener("dragenter", (e) => {
+  if (e.dataTransfer?.types.includes("Files")) {
+    e.preventDefault();
+    dragDepth++;
+    drop.classList.add("dragging");
+  }
+});
+window.addEventListener("dragover", (e) => {
+  if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
+});
+window.addEventListener("dragleave", () => {
+  if (--dragDepth <= 0) {
+    dragDepth = 0;
+    drop.classList.remove("dragging");
+  }
+});
+window.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dragDepth = 0;
+  drop.classList.remove("dragging");
+  if (e.dataTransfer.files[0]) analyze(e.dataTransfer.files[0]);
+});
+function reset() {
+  if (busy) return;
+  result.hidden = true;
+  hero.hidden = false;
+  if (previewURL) {
+    URL.revokeObjectURL(previewURL);
+    previewURL = null;
+  }
+  currentReport = null;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function render({groups,fileInfo,image,url,warning='',demo=false}){
- const tags=flattenGroups(groups),gps=coordinates(tags),count=Object.values(groups).reduce((n,g)=>n+Object.keys(g||{}).length,0);
- const capture=tags.DateTimeOriginal||tags.CreateDate||tags.DateCreated, camera=[tags.Make,tags.Model].filter(Boolean).join(' '),settings=cameraSettings(tags),offset=tags.OffsetTimeOriginal||tags.OffsetTime;
- const stat=(icon,label,value,sub,link='')=>`<div class="stat-card"><i data-lucide="${icon}"></i><small>${label}</small><strong>${esc(value)}</strong><p>${esc(sub)}</p>${link}</div>`;
- const section=(name,fields,open=false)=>`<details class="metadata-section" ${open?'open':''}><summary>${esc(name)} <span>${Object.keys(fields).length} fields</span></summary>${Object.entries(fields).map(([key,value])=>`<div class="data-row" data-search="${esc((key+' '+formatValue(value)).toLowerCase())}"><span>${esc(key.replace(/([a-z])([A-Z])/g,'$1 $2'))}</span><strong>${esc(formatValue(value))}</strong></div>`).join('')}</details>`;
- hero.hidden=true;result.hidden=false;
- result.innerHTML=`<div class="result-header"><div><span class="eyebrow"><span class="live-dot"></span> ${demo?'ILLUSTRATIVE DEMO · SAMPLE VALUES':'YOUR PHOTO, REVEALED'}</span><h2>${esc(demo?'A little closer to the story.':fileInfo['File name'])}</h2></div><div class="result-actions"><button class="text-button" id="export"><i data-lucide="download"></i>Export JSON</button><button class="text-button" id="another"><i data-lucide="plus"></i>New photo</button><button class="text-button" id="back"><i data-lucide="rotate-ccw"></i>Back</button></div></div><div class="result-layout"><div class="result-photo">${image.preview?`<img src="${esc(url)}" alt="${demo?'Mountain demo photo':'Your selected photo'}">`:'<div class="no-preview"><i data-lucide="image"></i>Your browser cannot display this image format.<br>Available metadata is shown alongside.</div>'}<p>${demo?'Demo photo · Metadata below is illustrative, not extracted from this image.':'Processed on your device · Your photo has not been uploaded.'}</p></div><div><div class="result-summary">${stat('map-pin','Coordinates',gps?`${gps.latitude.toFixed(5)}°, ${gps.longitude.toFixed(5)}°`:'Not recorded',tags.GPSAltitude!=null?`Altitude: ${tidyNumber(tags.GPSAltitude)} m`:'GPS is only available if saved in the photo.',gps?`<a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`:'')}${stat('clock-3','Date and time',captureLabel(capture),capture?`Camera time${offset?` · UTC${offset}`:' · Time zone not recorded'}`:'Original capture time is unavailable.')}${stat('camera','Phone / camera',camera||'Not recorded',tags.LensModel||'Device details depend on embedded metadata.')}${stat('aperture','Settings',settings||'Not recorded',tags.ExposureProgram||'The camera’s recorded exposure settings.')}</div><div class="result-note">${demo?'This demo shows how a rich photo report looks. The sample metadata is illustrative. Upload your own photo for real results.':warning||(!count?'No readable embedded metadata was found. Screenshots and shared images often have it removed. The file information below is still available.':'Metadata is a clue, not proof. It can be edited, incomplete, or removed. Capture time and file modification time may differ.')}</div><input class="metadata-search" type="search" aria-label="Search all metadata" placeholder="Search every detail… camera, date, copyright"><p class="result-count">${count} embedded fields · ${Object.keys(fileInfo).length} file details · Nothing hidden behind jargon.</p><div id="metadata-groups">${section('File information',fileInfo,true)}${Object.entries(groups).map(([group,fields])=>section(({ifd0:'Camera & image',exif:'Capture & settings',gps:'Location',xmp:'Editing & descriptions',iptc:'Credits & rights',icc:'Color profile',jfif:'Image structure',ihdr:'PNG image structure'})[group]||group,fields,true)).join('')}</div></div></div>`;
- document.querySelector('#back').onclick=reset;
- document.querySelector('#another').onclick=()=>fileInput.click();
- document.querySelector('#export').onclick=()=>{const blob=new Blob([JSON.stringify(currentReport,(_,value)=>typeof value==='bigint'?value.toString():ArrayBuffer.isView(value)?Array.from(value):value,2)],{type:'application/json'}),link=document.createElement('a');const u=URL.createObjectURL(blob);link.href=u;link.download=demo?'deepframe-demo.json':'deepframe-metadata.json';link.click();setTimeout(()=>URL.revokeObjectURL(u),1000);toast('Your metadata report is ready.')};
- document.querySelector('.metadata-search').oninput=e=>{const q=e.target.value.toLowerCase();let matches=0;document.querySelectorAll('.data-row').forEach(row=>{row.hidden=!row.dataset.search.includes(q);if(!row.hidden)matches++});document.querySelectorAll('.metadata-section').forEach(group=>{group.hidden=![...group.querySelectorAll('.data-row')].some(row=>!row.hidden);if(q)group.open=true});document.querySelector('.result-count').textContent=`${matches} matching fields`};icons();
+document.querySelector(".brand").addEventListener("click", reset);
+async function dimensions(url) {
+  return new Promise((resolve) => {
+    const i = new window.Image();
+    i.onload = () =>
+      resolve({
+        width: i.naturalWidth,
+        height: i.naturalHeight,
+        preview: true,
+      });
+    i.onerror = () => resolve({ preview: false });
+    i.src = url;
+  });
 }
-document.querySelector('#demo').onclick=()=>{if(busy)return;const groups={ifd0:{Make:'Sony',Model:'ILCE-7RM4',ImageWidth:9504,ImageHeight:6336,Software:'Adobe Lightroom',Artist:'Sample photographer'},exif:{DateTimeOriginal:'2025:09:14 07:42:18',OffsetTimeOriginal:'+02:00',FNumber:8,ExposureTime:0.002,ISO:100,FocalLength:35,LensModel:'FE 16-35mm F2.8 GM',ColorSpace:'sRGB',ExposureProgram:'Aperture priority'},gps:{latitude:46.5775,longitude:8.0052,GPSAltitude:2168}};const fileInfo={'File name':'alpine-morning.jpg','File size':'18.4 MB','File type':'image/jpeg','Demo notice':'All metadata values are illustrative, not extracted from the photo.'};currentReport={demo:true,file:fileInfo,embedded:groups};render({groups,fileInfo,image:{preview:true},url:demoURL,demo:true});result.scrollIntoView({behavior:'smooth',block:'start'})};
-const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('in-view');observer.unobserve(entry.target)}}),{threshold:.12});
-document.querySelectorAll('.section-head,.features article,.privacy-note,.closing,.footer-top').forEach(el=>{el.classList.add('scroll-reveal');observer.observe(el)});
+async function analyze(file) {
+  if (busy) return;
+  if (file.size > 60 * 1024 * 1024) {
+    toast("Choose a photo under 60 MB so your browser stays responsive.");
+    return;
+  }
+  if (
+    !file.type.startsWith("image/") &&
+    !/\.(jpe?g|png|heic|heif|tiff?|avif|webp|gif|bmp|svg)$/i.test(file.name)
+  ) {
+    toast("Please choose an image file.");
+    return;
+  }
+  busy = true;
+  hero.hidden = true;
+  result.hidden = false;
+  result.innerHTML =
+    '<div class="loading"><i data-lucide="aperture"></i><h2>Reading between the pixels.</h2><p>Exploring your photo, right here on your device.</p></div>';
+  icons();
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (previewURL) URL.revokeObjectURL(previewURL);
+  previewURL = URL.createObjectURL(file);
+  try {
+    const image = await dimensions(previewURL);
+    let groups = {},
+      warning = "";
+    try {
+      groups =
+        (await exifr.parse(file, {
+          tiff: true,
+          makerNote: true,
+          userComment: true,
+          multiSegment: true,
+          xmp: true,
+          icc: true,
+          iptc: true,
+          jfif: true,
+          ihdr: true,
+          mergeOutput: false,
+          reviveValues: false,
+          translateKeys: true,
+          translateValues: true,
+        })) || {};
+    } catch (error) {
+      warning =
+        "Some embedded metadata could not be read. File details are still available.";
+      console.warn("Metadata parser:", error.message);
+    }
+    const bytes = await file.arrayBuffer();
+    const sha = globalThis.crypto?.subtle
+      ? Array.from(
+          new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+          (x) => x.toString(16).padStart(2, "0"),
+        ).join("")
+      : "Unavailable in this browser context";
+    const fileInfo = {
+      "File name": file.name,
+      "File size": `${formatBytes(file.size)} (${file.size.toLocaleString()} bytes)`,
+      "File type": file.type || "Not provided by browser",
+      ...(image.width
+        ? {
+            "Image width": `${image.width} px`,
+            "Image height": `${image.height} px`,
+            Resolution: `${((image.width * image.height) / 1e6).toFixed(2)} megapixels`,
+          }
+        : {}),
+      "File last modified": new Date(file.lastModified).toISOString(),
+      "SHA-256": sha,
+    };
+    currentReport = { file: fileInfo, embedded: groups };
+    render({ groups, fileInfo, image, url: previewURL, warning, demo: false });
+  } catch (error) {
+    result.innerHTML =
+      '<div class="loading"><h2>This frame couldn’t be opened.</h2><p>Try another image or a smaller file.</p><button class="text-button" id="retry">Back to the experience</button></div>';
+    document.querySelector("#retry").onclick = reset;
+    console.warn(error);
+  } finally {
+    busy = false;
+  }
+}
+function render({ groups, fileInfo, image, url, warning = "", demo = false }) {
+  const tags = flattenGroups(groups),
+    gps = coordinates(tags),
+    count = Object.values(groups).reduce(
+      (n, g) => n + Object.keys(g || {}).length,
+      0,
+    );
+  const capture = tags.DateTimeOriginal || tags.CreateDate || tags.DateCreated,
+    camera = [tags.Make, tags.Model].filter(Boolean).join(" "),
+    settings = cameraSettings(tags),
+    offset = tags.OffsetTimeOriginal || tags.OffsetTime;
+  const stat = (icon, label, value, sub, link = "") =>
+    `<div class="stat-card"><i data-lucide="${icon}"></i><small>${label}</small><strong>${esc(value)}</strong><p>${esc(sub)}</p>${link}</div>`;
+  const fieldValue = (value) =>
+    ArrayBuffer.isView(value)
+      ? `<details class="binary-value"><summary>${esc(formatValue(value))} · View raw values</summary><code>${esc(JSON.stringify(Array.from(value)))}</code></details>`
+      : esc(formatValue(value));
+  const section = (name, fields, open = false) =>
+    `<details class="metadata-section" ${open ? "open" : ""}><summary>${esc(name)} <span>${Object.keys(fields).length} fields</span></summary>${Object.entries(
+      fields,
+    )
+      .map(
+        ([key, value]) =>
+          `<div class="data-row" data-search="${esc((key + " " + formatValue(value)).toLowerCase())}"><span>${esc(key.replace(/([a-z])([A-Z])/g, "$1 $2"))}</span><strong>${fieldValue(value)}</strong></div>`,
+      )
+      .join("")}</details>`;
+  hero.hidden = true;
+  result.hidden = false;
+  result.innerHTML = `<div class="result-header"><div><span class="eyebrow"><span class="live-dot"></span> ${demo ? "ILLUSTRATIVE DEMO · SAMPLE VALUES" : "YOUR PHOTO, REVEALED"}</span><h2>${esc(demo ? "A little closer to the story." : fileInfo["File name"])}</h2></div><div class="result-actions"><button class="text-button" id="export"><i data-lucide="download"></i>Export JSON</button><button class="text-button" id="another"><i data-lucide="plus"></i>New photo</button><button class="text-button" id="back"><i data-lucide="rotate-ccw"></i>Back</button></div></div><div class="result-layout"><div class="result-photo">${image.preview ? `<img src="${esc(url)}" alt="${demo ? "Mountain demo photo" : "Your selected photo"}">` : '<div class="no-preview"><i data-lucide="image"></i>Your browser cannot display this image format.<br>Available metadata is shown alongside.</div>'}<p>${demo ? "Demo photo · Metadata below is illustrative, not extracted from this image." : "Processed on your device · Your photo has not been uploaded."}</p></div><div><div class="result-summary">${stat("map-pin", "Coordinates", gps ? `${gps.latitude.toFixed(5)}°, ${gps.longitude.toFixed(5)}°` : "Not recorded", tags.GPSAltitude != null ? `Altitude: ${tidyNumber(tags.GPSAltitude)} m` : "GPS is only available if saved in the photo.", gps ? `<a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>` : "")}${stat("clock-3", "Date and time", captureLabel(capture), capture ? `Camera time${offset ? ` · UTC${offset}` : " · Time zone not recorded"}` : "Original capture time is unavailable.")}${stat("camera", "Phone / camera", camera || "Not recorded", tags.LensModel || "Device details depend on embedded metadata.")}${stat("aperture", "Settings", settings || "Not recorded", tags.ExposureProgram || "The camera’s recorded exposure settings.")}</div><div class="result-note">${demo ? "This demo shows how a rich photo report looks. The sample metadata is illustrative. Upload your own photo for real results." : warning || (!count ? "No readable embedded metadata was found. Screenshots and shared images often have it removed. The file information below is still available." : "Metadata is a clue, not proof. It can be edited, incomplete, or removed. Capture time and file modification time may differ.")}</div><input class="metadata-search" type="search" aria-label="Search all metadata" placeholder="Search every detail… camera, date, copyright"><p class="result-count">${count} embedded fields · ${Object.keys(fileInfo).length} file details · Nothing hidden behind jargon.</p><div id="metadata-groups">${section("File information", fileInfo, true)}${Object.entries(
+    groups,
+  )
+    .map(([group, fields]) =>
+      section(
+        {
+          ifd0: "Camera & image",
+          exif: "Capture & settings",
+          gps: "Location",
+          ifd1: "Embedded thumbnail",
+          photoshop: "Editing history",
+          Iptc4xmpExt: "Provenance & source",
+          dc: "Description & authors",
+          xmp: "Editing & descriptions",
+          iptc: "Credits & rights",
+          icc: "Color profile",
+          jfif: "Image structure",
+          ihdr: "PNG image structure",
+        }[group] || group,
+        fields,
+        true,
+      ),
+    )
+    .join("")}</div></div></div>`;
+  document.querySelector("#back").onclick = reset;
+  document.querySelector("#another").onclick = () => fileInput.click();
+  document.querySelector("#export").onclick = () => {
+    const blob = new Blob(
+        [
+          JSON.stringify(
+            currentReport,
+            (_, value) =>
+              typeof value === "bigint"
+                ? value.toString()
+                : ArrayBuffer.isView(value)
+                  ? Array.from(value)
+                  : value,
+            2,
+          ),
+        ],
+        { type: "application/json" },
+      ),
+      link = document.createElement("a");
+    const u = URL.createObjectURL(blob);
+    link.href = u;
+    link.download = demo ? "deepframe-demo.json" : "deepframe-metadata.json";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(u), 1000);
+    toast("Your metadata report is ready.");
+  };
+  document.querySelector(".metadata-search").oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    let matches = 0;
+    document.querySelectorAll(".data-row").forEach((row) => {
+      row.hidden = !row.dataset.search.includes(q);
+      if (!row.hidden) matches++;
+    });
+    document.querySelectorAll(".metadata-section").forEach((group) => {
+      group.hidden = ![...group.querySelectorAll(".data-row")].some(
+        (row) => !row.hidden,
+      );
+      if (q) group.open = true;
+    });
+    document.querySelector(".result-count").textContent =
+      `${matches} matching fields`;
+  };
+  icons();
+}
+document.querySelector("#demo").onclick = () => {
+  if (busy) return;
+  const groups = {
+    ifd0: {
+      Make: "Sony",
+      Model: "ILCE-7RM4",
+      ImageWidth: 9504,
+      ImageHeight: 6336,
+      Software: "Adobe Lightroom",
+      Artist: "Sample photographer",
+    },
+    exif: {
+      DateTimeOriginal: "2025:09:14 07:42:18",
+      OffsetTimeOriginal: "+02:00",
+      FNumber: 8,
+      ExposureTime: 0.002,
+      ISO: 100,
+      FocalLength: 35,
+      LensModel: "FE 16-35mm F2.8 GM",
+      ColorSpace: "sRGB",
+      ExposureProgram: "Aperture priority",
+    },
+    gps: { latitude: 46.5775, longitude: 8.0052, GPSAltitude: 2168 },
+  };
+  const fileInfo = {
+    "File name": "alpine-morning.jpg",
+    "File size": "18.4 MB",
+    "File type": "image/jpeg",
+    "Demo notice":
+      "All metadata values are illustrative, not extracted from the photo.",
+  };
+  currentReport = { demo: true, file: fileInfo, embedded: groups };
+  render({
+    groups,
+    fileInfo,
+    image: { preview: true },
+    url: demoURL,
+    demo: true,
+  });
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+const observer = new IntersectionObserver(
+  (entries) =>
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        observer.unobserve(entry.target);
+      }
+    }),
+  { threshold: 0.12 },
+);
+document
+  .querySelectorAll(
+    ".section-head,.features article,.privacy-note,.closing,.footer-top",
+  )
+  .forEach((el) => {
+    el.classList.add("scroll-reveal");
+    observer.observe(el);
+  });
